@@ -1,8 +1,10 @@
-const router = require('express').Router
-const all = require('./noticeAllList')
-const one = require('./noticeOne')
+const express = require('express')
+const router = require('express').Router()
 
-router.get('/noticeAllList',noticeAllList)
+const noticeAllList = require('./noticeAllList')
+const noticeOne = require('./noticeOne')
+
+router.use('/noticeAllList',noticeAllList)
 router.get('/noticeOne',noticeOne)
 
 module.exports = router

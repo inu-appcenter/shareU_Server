@@ -1,3 +1,5 @@
+const express = require('express')
+const router = require('express').Router()
 router.get('/noticeAllList',(req,res)=>{
 
     let sql = ' SELECT title, DATE_FORMAT(noticeDate, "%Y-%m-%d") AS noticeDate FROM notice';  
@@ -12,3 +14,5 @@ router.get('/noticeAllList',(req,res)=>{
     });  
     
 })
+
+module.exports = router

@@ -1,3 +1,5 @@
+const express = require('express')
+const router = require('express').Router()
 router.get('/noticeOne',(req,res)=>{
 
     const db = req.app.get('db');
@@ -15,3 +17,5 @@ router.get('/noticeOne',(req,res)=>{
     });        
     
 })
+
+module.exports = router
