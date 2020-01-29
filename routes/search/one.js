@@ -1,4 +1,5 @@
-/*
+
+const express = require('express')
 const router = require('express').Router()
 
 router.get('/one',(req,res)=>{
@@ -18,4 +19,3 @@ router.get('/one',(req,res)=>{
 
 
 module.exports = router
-*/
