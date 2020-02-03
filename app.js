@@ -1,8 +1,10 @@
 const app = require('./config/express')();
 
 
+
 app.use('/search', require('./routes/search/index'));
 app.use('/notice', require('./routes/notice/index'));
+app.use('/document', require('./routes/document/index'));
 
 
 

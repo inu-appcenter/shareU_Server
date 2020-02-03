@@ -1,7 +1,7 @@
 const express = require('express')
 const router = require('express').Router()
-router.get('/noticeAllList',(req,res)=>{
-
+router.get('/',(req,res)=>{
+    const db = req.app.get('db');
     let sql = ' SELECT title, DATE_FORMAT(noticeDate, "%Y-%m-%d") AS noticeDate FROM notice';  
     db.query(sql, (err, rows) => { //
     if (err) {

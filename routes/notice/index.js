@@ -5,6 +5,6 @@ const noticeAllList = require('./noticeAllList')
 const noticeOne = require('./noticeOne')
 
 router.use('/noticeAllList',noticeAllList)
-router.get('/noticeOne',noticeOne)
+router.use('/noticeOne',noticeOne)
 
 module.exports = router

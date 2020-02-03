@@ -1,6 +1,6 @@
 const express = require('express')
 const router = require('express').Router()
-router.get('/noticeOne',(req,res)=>{
+router.get('/',(req,res)=>{
 
     const db = req.app.get('db');
     

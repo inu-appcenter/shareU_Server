@@ -20,7 +20,7 @@ router.get('/majorList',(req,res)=>{
 router.get('/subjectList',(req,res)=>{
   const db = req.app.get('db');
   let majorN=req.query.majorName;
-  let sql = 'SELECT subjectName, profName, subjectInitiality FROM subjectList WHERE division="전공"&&majorName=?'; 
+  let sql = 'SELECT subjectName AS majorName, profName AS majorProName, subjectInitiality AS majorInitiality FROM subjectList WHERE division="전공"&&majorName=?'; 
   db.query(sql,majorN, (err, rows) => { 
     if (err) {
       console.log("과선택시 각과 전공과목 전송 실패");
@@ -29,12 +29,14 @@ router.get('/subjectList',(req,res)=>{
   
     res.status(200).json(rows);
     
-  });   
+  });  
+  
+})
 
 //--------------------교양과목 전체전송-------------------------------------------
 router.get('/cultureList',(req,res)=>{
   const db = req.app.get('db');
-  let sql = 'SELECT subjectName,profName,subjectInitiality FROM subjectList WHERE division="교양"';  
+  let sql = 'SELECT subjectName AS majorName,profName AS majorProName,subjectInitiality AS majorInitiality FROM subjectList WHERE division="교양"';  
   db.query(sql, (err, rows) => { 
     if (err) {
       console.log("교양과목리스트 전송 실패");
@@ -49,7 +51,7 @@ router.get('/cultureList',(req,res)=>{
 
        
           
-})
+
 
 
 
