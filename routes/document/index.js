@@ -8,9 +8,9 @@ const send = require('./send')
 
 
 
-router.post('/deleteD',deleteD)
-router.post('/modify',modify)
-router.post('/store',store)
+router.use('/deleteD',deleteD)
+router.use('/modify',modify)
+router.use('/store',store)
 router.use('/send',send)
 
 

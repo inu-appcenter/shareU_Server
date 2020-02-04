@@ -3,10 +3,12 @@ const router = require('express').Router()
 const multer = require('multer')
 const fs = require('fs')
 const path = require('path')
-const authMiddleware = require('../account/auth')
+//const authMiddleware = require('../account/auth')
+const utf8 = require('utf8');
 var moment =require('moment'); 
 require('moment-timezone'); 
 moment.tz.setDefault("Asia/Seoul"); 
+
 
 
 const storage = multer.diskStorage({ 
@@ -14,19 +16,18 @@ const storage = multer.diskStorage({
         cb(null, "uploads/")
     }, 
     filename : (req,file,cb)=>{ 
-        let extension = path.extname(file.originalname) 
-        let basename = path.basename(file.originalname, extension) 
-        cb(null,basename+extension) 
+        cb(null,new Date().valueOf() + path.extname(file.originalname));
     } 
 }) 
 
 
 const upload = multer({storage: storage}) 
 
-router.use('/',authMiddleware)
+//router.use('/',authMiddleware)
 let Array = [] 
 
-router.post('/upload',upload.array('userfile',15),(req,res)=>{
+
+router.post('/upload',upload.array('userfile',15), async (req,res)=>{
     console.log("메롱")
     const db = req.app.get('db');
     //let uploadId = req.decoded.id;
@@ -38,9 +39,9 @@ router.post('/upload',upload.array('userfile',15),(req,res)=>{
     let uploadDate = moment().format('YYYY-MM-DD HH:mm:ss');
 
     let sql='INSERT INTO document (title,subjectName,profName,content,uploadDate) VALUES (?,?,?,?,?)';
-    let sqlFile = 'INSERT INTO file_table (documentKey,fileName,subjectName,profName) VALUES ?';
+    let sqlFile = 'INSERT INTO file (documentKey,fileName,subjectName,profName) VALUES ?';
 
-    db.query(sql,title,subjectName,profName,content,uploadDate,  function(err,result)  { 
+    await db.query(sql,[title,subjectName,profName,content,uploadDate], async function(err,result)  { 
     if (err) {
     console.log(err);
     return res.sendStatus(400);
@@ -52,20 +53,20 @@ router.post('/upload',upload.array('userfile',15),(req,res)=>{
             else{ 
                res.json({ans:true}); 
             } 
-            db.destroy(); 
+            
           } 
 
     else { 
-         req.files.map(Data => Array.push([result.insertId,Data.filename,subjectNamt,profName])) 
-         db.query(sqlFile,[Array],  function(err){ 
+        await req.files.map(Data => Array.push([result.insertId,Data.filename,subjectName,profName])) 
+        await db.query(sqlFile,[Array],  function(err){ 
               if(err){ 
                   console.log(err); 
                 } 
               else{ 
-                 
+                    
                    res.json({ans:true}); 
                    } 
-                   db.destroy(); 
+                  
              }) 
            } 
        
