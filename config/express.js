@@ -5,7 +5,7 @@ module.exports = () => {
     const bodyParser = require('body-parser');//body parser 미들웨어를 통해 POST요청을 처리할 때 사용자가 보낸 데이터를 추출할수 있음
     var passport = require('passport')
     var LocalStrategy = require('passport-local').Strategy
-   
+
 
     passport.deserializeUser(function(department, done) {
       console.log('deserializeUser',department)

@@ -3,6 +3,12 @@ const router = require('express').Router()
 const multer = require('multer')
 const fs = require('fs')
 const path = require('path')
+var randomstring = require("randomstring");
+const fileUpload = require('express-fileupload');
+const app = express();
+
+app.use(fileUpload()); // Don't forget this line!
+
 //const authMiddleware = require('../account/auth')
 const utf8 = require('utf8');
 var moment =require('moment'); 
@@ -16,10 +22,10 @@ const storage = multer.diskStorage({
         cb(null, "uploads/")
     }, 
     filename : (req,file,cb)=>{ 
-        cb(null,new Date().valueOf() + path.extname(file.originalname));
+        cb(null, file.originalname);
+               
     } 
 }) 
-
 
 const upload = multer({storage: storage}) 
 
@@ -27,21 +33,35 @@ const upload = multer({storage: storage})
 let Array = [] 
 
 
-router.post('/upload',upload.array('userfile',15), async (req,res)=>{
-    console.log("메롱")
+router.post('/uploadfile',upload.array('userfile',15), async (req,res)=>{ // 자료 업로드
+    
     const db = req.app.get('db');
     //let uploadId = req.decoded.id;
+    let uploadId = req.body.uploadId;
     let title = req.body.title;
     let subjectName= req.body.subjectName;
     let profName= req.body.profName;
     let content= req.body.content;
+    if (!req.files[0]) {
+        var filen=null;
+        var ext=null;
+        // File does not exist.
+        console.log("No file");
+      } else {
+        // File exists.
+        var filen=req.files[0].filename;
+        var ext = filen.split('.').pop();
+        console.log("File exists");
+      }
     
     let uploadDate = moment().format('YYYY-MM-DD HH:mm:ss');
 
-    let sql='INSERT INTO document (title,subjectName,profName,content,uploadDate) VALUES (?,?,?,?,?)';
-    let sqlFile = 'INSERT INTO file (documentKey,fileName,subjectName,profName) VALUES ?';
+    let sql='INSERT INTO document (uploadId,title,subjectName,profName,content,uploadDate) VALUES (?,?,?,?,?,?)'; // uploadId 들어가면 수정하기
+    let sqlFile = 'INSERT INTO file (documentKey,fileName,subjectName,profName,extension) VALUES ?';
+    let sqlPoint = 'INSERT INTO point (userId,point,documentKey) VALUES (?,5,?) '
+    
 
-    await db.query(sql,[title,subjectName,profName,content,uploadDate], async function(err,result)  { 
+    await db.query(sql,[uploadId,title,subjectName,profName,content,uploadDate], async function(err,result)  { 
     if (err) {
     console.log(err);
     return res.sendStatus(400);
@@ -51,20 +71,44 @@ router.post('/upload',upload.array('userfile',15), async (req,res)=>{
     else if(req.files == null || req.files == undefined || req.files == "" ){ 
         if(err) throw err; 
             else{ 
-               res.json({ans:true}); 
+              if (err){
+                console.log(err);
+                return res.sendStatus(400);
+              }
+              else{
+                await db.query(sqlPoint,[uploadId,result.insertId], async function(err){
+                  if(err){
+                    console.log(err);
+                    return res.sendStatus(400);
+                  }
+                  else{
+                     res.json({ans:true}); 
+                  }
+                })
+              }             
             } 
             
           } 
 
     else { 
-        await req.files.map(Data => Array.push([result.insertId,Data.filename,subjectName,profName])) 
-        await db.query(sqlFile,[Array],  function(err){ 
-              if(err){ 
+        await req.files.map(Data => Array.push([result.insertId,Data.filename,subjectName,profName,ext])) 
+        await db.query(sqlFile,[Array],async  function(err){ 
+              if(err){
+                  console.log("자료 업로드")
                   console.log(err); 
                 } 
               else{ 
-                    
-                   res.json({ans:true}); 
+                await db.query(sqlPoint,[uploadId,result.insertId], async function(err){
+                  if(err){
+                    console.log(err);
+                    return res.sendStatus(400);
+                  }
+                  else{
+                      console.log(result.insertId)
+                      await res.json({ans:true}); 
+                  }
+                })
+                   
                    } 
                   
              }) 
@@ -72,6 +116,29 @@ router.post('/upload',upload.array('userfile',15), async (req,res)=>{
        
        
        
+    });  
+    
+})
+
+router.post('/uploadreview',(req,res)=>{
+    const db = req.app.get('db')
+    let uploadDate = moment().format('YYYY-MM-DD HH:mm:ss');
+    //let uploadId = req.decoded.id;
+    let review= req.body.review;
+    
+    let documentKey= req.body.documentKey;
+
+    let sql = 'INSERT INTO review (uploadDate,review,documentKey) VALUES (?,?,?) ';  //uploadId들어가면 수정하기
+    db.query(sql,[uploadDate,review,documentKey], (err, rows) => { 
+    if (err) {
+    console.log("족보 리뷰 업로드 실패");
+    console.log(documentKey)
+    console.log(err)
+    return res.sendStatus(400);
+    }
+    
+    res.status(200).json(rows);
+    
     });  
     
 })
