@@ -1,18 +1,18 @@
 const express = require('express')
 const router = require('express').Router()
 
-const deleteD = require('./deleteD')
+const delete_doc = require('./delete_doc')
 const modify = require('./modify')
-const store = require('./store')
+const upload = require('./upload')
 const send = require('./send')
+const user_doc = require('./user_doc')
 
 
-
-router.use('/deleteD',deleteD)
+router.use('/delete_doc',delete_doc)
 router.use('/modify',modify)
-router.use('/store',store)
+router.use('/upload',upload)
 router.use('/send',send)
-
+router.use('/user_doc',user_doc)
 
 
 module.exports = router

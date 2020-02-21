@@ -5,7 +5,7 @@ const fileupload = require("express-fileupload");
 app.use('/search', require('./routes/search/index'));
 app.use('/notice', require('./routes/notice/index'));
 app.use('/document', require('./routes/document/index'));
-
+app.use('/account',require('./routes/account/user'))
 
 
 

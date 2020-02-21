@@ -3,7 +3,6 @@ const router = require('express').Router()
 const multer = require('multer')
 const fs = require('fs')
 const path = require('path')
-var randomstring = require("randomstring");
 const fileUpload = require('express-fileupload');
 const app = express();
 
@@ -22,7 +21,12 @@ const storage = multer.diskStorage({
         cb(null, "uploads/")
     }, 
     filename : (req,file,cb)=>{ 
-        cb(null, file.originalname);
+      if (fs.existsSync(path.join("uploads/",file.originalname))) {
+        cb(null,  Date.now()+'_'+file.originalname)
+      }else{
+        cb(null, file.originalname)
+      }
+
                
     } 
 }) 
@@ -124,20 +128,32 @@ router.post('/uploadreview',(req,res)=>{
     const db = req.app.get('db')
     let uploadDate = moment().format('YYYY-MM-DD HH:mm:ss');
     //let uploadId = req.decoded.id;
-    let review= req.body.review;
-    
-    let documentKey= req.body.documentKey;
-
-    let sql = 'INSERT INTO review (uploadDate,review,documentKey) VALUES (?,?,?) ';  //uploadId들어가면 수정하기
-    db.query(sql,[uploadDate,review,documentKey], (err, rows) => { 
+    let rev= req.body.review;
+    let upId = req.body.uploadId;
+    let documentK= req.body.documentKey;
+    let sco = req.body.score;
+    let sql = 'INSERT INTO review (uploadDate,review,documentKey,uploadId,score) VALUES (?,?,?,?,?) ';  //uploadId들어가면 수정하기
+    let sqlPoint = 'INSERT INTO point (userId,point,documentKey) VALUES (?,2,?) '
+    db.query(sql,[uploadDate,rev,documentK,upId,sco],async (err, rows) => { 
     if (err) {
     console.log("족보 리뷰 업로드 실패");
-    console.log(documentKey)
+    console.log(req.body)
+    //console.log(review)
+   // console.log(uploadId)
+   // console.log(documentKey)
     console.log(err)
     return res.sendStatus(400);
     }
-    
-    res.status(200).json(rows);
+     else{
+      await db.query(sqlPoint,[upId,documentK],async (err,rows)=>{
+        if(err){
+          return res.sendStatus(400);
+        }
+        else{
+          await res.json({ans:true}); 
+        }
+      } )
+     }
     
     });  
     

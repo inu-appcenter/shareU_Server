@@ -1,5 +1,15 @@
-/*//앱센터 스터디
-const request=require('request'); 
+//앱센터 스터디
+const express = require('express')
+const router = express.Router()
+//const config = require('./express')
+const request = require('request')
+const authMiddleWare = require('./auth')
+let returnJson = {}
+let returnStatus
+
+router.use('/myPage',authMiddleWare)
+router.use('/changeInfo',authMiddleWare)
+
 
 router.get('/login',(req,res)=>{
     const query ={
@@ -15,10 +25,11 @@ router.get('/login',(req,res)=>{
         json: true
     }
     request.post()
-    res.send('sucess');
+    res.status(returnStatus).json(returnJson)
+            return response
 })
 
-*/
+/*
 
 const express = require('express')
 const router = express.Router()
@@ -31,7 +42,7 @@ let returnStatus
 router.use('/myPage',authMiddleWare)
 router.use('/changeInfo',authMiddleWare)
 
-/*
+
 router.post('/signUp',(req,res)=>{
     const signUpOptions = {
         url : config.signUpPath,
@@ -73,10 +84,10 @@ router.post('/signUp',(req,res)=>{
         }
     })
 })
-*/
+
  router.post('/signIn',async (req,res)=>{
     const signInOptions = {
-        url : config.signInPath,
+        url : 'http://117.16.191.242:7003/signIn',
         headers : {
             'Content-Type':'application/x-www-form-urlencoded'
         },
@@ -208,7 +219,7 @@ router.post('/myPage',async (req,res) => {
     res.status(200).json(decodedQuery)
 })
 
-
+*/
 
 
 
