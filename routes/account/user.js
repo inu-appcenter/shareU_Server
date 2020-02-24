@@ -1,4 +1,5 @@
 //앱센터 스터디
+/*
 const express = require('express')
 const router = express.Router()
 //const config = require('./express')
@@ -29,15 +30,18 @@ router.get('/login',(req,res)=>{
             return response
 })
 
-/*
+*/
 
 const express = require('express')
 const router = express.Router()
 //const config = require('./express')
 const request = require('request')
 const authMiddleWare = require('./auth')
+const config = require('../../config/config')
 let returnJson = {}
 let returnStatus
+
+
 
 router.use('/myPage',authMiddleWare)
 router.use('/changeInfo',authMiddleWare)
@@ -45,7 +49,7 @@ router.use('/changeInfo',authMiddleWare)
 
 router.post('/signUp',(req,res)=>{
     const signUpOptions = {
-        url : config.signUpPath,
+        url : config.signUp,
         headers : {
             'Content-Type':'application/x-www-form-urlencoded'
         },
@@ -87,7 +91,7 @@ router.post('/signUp',(req,res)=>{
 
  router.post('/signIn',async (req,res)=>{
     const signInOptions = {
-        url : 'http://117.16.191.242:7003/signIn',
+        url : config.signIn,
         headers : {
             'Content-Type':'application/x-www-form-urlencoded'
         },
@@ -126,7 +130,7 @@ router.post('/signUp',(req,res)=>{
 
 router.post('/changeInfo',(req,res)=>{
     const changeQuery = {
-        url : config.changeInfoPath,
+        url : config.changeInfo,
         headers : {
             'Content-Type' : 'application/x-www-form-urlencoded'
         },
@@ -171,7 +175,7 @@ router.post('/changeInfo',(req,res)=>{
 
 router.post('/tmpPasswd', async(req,res)=>{
     const tmpPasswdQuery = {
-        url : config.tmpPasswdPath,
+        url : config.tmpPasswd,
         headers : {
             'Content-Type' : 'application/x-www-form-urlencoded'
         },
@@ -219,7 +223,7 @@ router.post('/myPage',async (req,res) => {
     res.status(200).json(decodedQuery)
 })
 
-*/
+
 
 
 

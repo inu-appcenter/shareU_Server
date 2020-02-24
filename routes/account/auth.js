@@ -1,7 +1,7 @@
 
 const jwt = require('jsonwebtoken')
 const express = require('express');
-
+const key = require('../../config/jwt').key
 const authMiddleware = (req,res,next) => {
     //read the token from header or url
     const token = req.headers['x-access-token'] || req.body.token
@@ -17,7 +17,7 @@ const authMiddleware = (req,res,next) => {
     //create a promise that decodes the token
     const p = new Promise(
         (resolve, reject) => {
-            jwt.verify(token,ApPcEnTeRaCcOuNt,(err,decoded) => {
+            jwt.verify(token,key,(err,decoded) => {
                 if(err) reject(err)
                 resolve(decoded)
             })

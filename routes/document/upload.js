@@ -8,7 +8,7 @@ const app = express();
 
 app.use(fileUpload()); // Don't forget this line!
 
-//const authMiddleware = require('../account/auth')
+const authMiddleware = require('../account/auth')
 const utf8 = require('utf8');
 var moment =require('moment'); 
 require('moment-timezone'); 
@@ -33,14 +33,14 @@ const storage = multer.diskStorage({
 
 const upload = multer({storage: storage}) 
 
-//router.use('/',authMiddleware)
+router.use('/',authMiddleware)
 let Array = [] 
 
 
 router.post('/uploadfile',upload.array('userfile',15), async (req,res)=>{ // 자료 업로드
     
     const db = req.app.get('db');
-    //let uploadId = req.decoded.id;
+    
     let uploadId = req.body.uploadId;
     let title = req.body.title;
     let subjectName= req.body.subjectName;
@@ -127,14 +127,13 @@ router.post('/uploadfile',upload.array('userfile',15), async (req,res)=>{ // 자
 router.post('/uploadreview',(req,res)=>{
     const db = req.app.get('db')
     let uploadDate = moment().format('YYYY-MM-DD HH:mm:ss');
-    //let uploadId = req.decoded.id;
+    let uploadId = req.decoded.id;
     let rev= req.body.review;
-    let upId = req.body.uploadId;
     let documentK= req.body.documentKey;
     let sco = req.body.score;
-    let sql = 'INSERT INTO review (uploadDate,review,documentKey,uploadId,score) VALUES (?,?,?,?,?) ';  //uploadId들어가면 수정하기
-    let sqlPoint = 'INSERT INTO point (userId,point,documentKey) VALUES (?,2,?) '
-    db.query(sql,[uploadDate,rev,documentK,upId,sco],async (err, rows) => { 
+    let sql = 'INSERT INTO review (uploadDate,uploadId,review,documentKey,uploadId,score) VALUES (?,?,?,?,?,?) ';  //uploadId들어가면 수정하기
+    let sqlPoint = 'INSERT INTO point (uploadId,point,documentKey) VALUES (?,2,?) '
+    db.query(sql,[uploadDate,uploadId,rev,documentK,upId,sco],async (err, rows) => { 
     if (err) {
     console.log("족보 리뷰 업로드 실패");
     console.log(req.body)
@@ -145,7 +144,7 @@ router.post('/uploadreview',(req,res)=>{
     return res.sendStatus(400);
     }
      else{
-      await db.query(sqlPoint,[upId,documentK],async (err,rows)=>{
+      await db.query(sqlPoint,[uploadId,documentK],async (err,rows)=>{
         if(err){
           return res.sendStatus(400);
         }
