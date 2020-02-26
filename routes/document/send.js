@@ -57,7 +57,7 @@ router.get('/score',(req,res)=>{ // 게시물 평균 별점 전송
 router.get('/reviewList',(req,res)=>{ // 리뷰 리스트 전송
     const db = req.app.get('db');
     let documentK=req.query.documentKey
-    let sql = 'SELECT uploadDate,uploadId,review,score,reviewKey FROM review WHERE documentKey=? ';  
+    let sql = 'SELECT uploadDate,uploadId,review,score,reviewKey FROM review WHERE documentKey=? ORDER BY uploadDate';  
     db.query(sql,documentK, (err, rows) => { 
     if (err) {
     console.log("리뷰 리스트 전송 실패");
@@ -192,10 +192,10 @@ router.get('/documentPage',(req,res)=>{ // 자료 상세 페이지 -> 파일을 
 })
 
 
-router.get('/documentFile',(req,res)=>{ // 자료 파일 다운로드 (서버에 저장된 파일 클라이언트에게 전송)
+router.post('/documentFile',(req,res)=>{ // 자료 파일 다운로드 (서버에 저장된 파일 클라이언트에게 전송)
     const db = req.app.get('db');
     
-    let documentKey=req.query.documentKey;
+    let documentKey=req.body.documentKey;
     let uploadId = req.decoded.id;  
     let sqlPoint='INSERT INTO point (uploadId,point,documentKey) VALUES (?,-3,?)'
     let sqlFile='SELECT fileName FROM file WHERE documentKey=?';

@@ -3,7 +3,7 @@ const router = require('express').Router()
 const app = express();
 
 const authMiddleware = require('../account/auth')
-router.use('/',authMiddleware)
+router.use('/userUploadList',authMiddleware)
 
 
 
@@ -11,10 +11,11 @@ router.post('/userUploadList',(req,res)=>{ //사용자 업로드 리스트
     const db = req.app.get('db');
     
     let uploadId = req.decoded.id;
-    let sql ='SELECT DATE_FORMAT(d.uploadDate, "%Y-%m-%d") AS uploadDate,d.title,f.extension,d.documentKey FROM document d,file f,point p WHERE d.documentKey=f.documentKey AND d.documentKey=p.documentKey AND p.point=5 AND p.userId=?';  
+    let sql ='SELECT DATE_FORMAT(d.uploadDate, "%Y-%m-%d") AS uploadDate,d.title,f.extension,d.documentKey FROM document d,file f,point p WHERE d.documentKey=f.documentKey AND d.documentKey=p.documentKey AND p.point=5 AND p.uploadId=?';  
     db.query(sql,uploadId, (err, rows) => { 
     if (err) {
     console.log("사용자 업로드 게시물 리스트 전송 실패");
+    console.log(err)
     return res.sendStatus(400);
     }
     else{
@@ -51,7 +52,7 @@ router.post('/userPage',(req,res)=>{ //사용자 업로드 또는 사용자 다�
 
     const db = req.app.get('db');
    
-    let documentKey=req.query.documentKey;
+    let documentKey=req.body.documentKey;
     let uploadId = req.decoded.id;  
     let sql = 'SELECT d.title,d.subjectName,d.profName,d.content,f.extension,f.fileName FROM document d,file f WHERE d.documentKey=f.documentKey And d.documentKey=? AND d.uploadId=?';  
     
@@ -70,7 +71,7 @@ router.post('/userPage',(req,res)=>{ //사용자 업로드 또는 사용자 다�
 router.post('/userPageDownloadDelete',(req,res)=>{ //사용자가 다운로드한 게시물 중 선택한 게시물 삭제
     const db = req.app.get('db');
     
-    let documentKey=req.query.documentKey;
+    let documentKey=req.body.documentKey;
     let uploadId = req.decoded.id; 
     let sql='DELETE FROM point WHERE point=-3 AND userId=? AND documentKey=?' 
     

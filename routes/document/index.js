@@ -1,4 +1,3 @@
-const express = require('express')
 const router = require('express').Router()
 
 const delete_doc = require('./delete_doc')

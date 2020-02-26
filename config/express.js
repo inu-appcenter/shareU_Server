@@ -3,30 +3,8 @@ module.exports = () => {
     const timeout = require('connect-timeout');//connect-timeout 미들웨어
     const path = require('path');
     const bodyParser = require('body-parser');//body parser 미들웨어를 통해 POST요청을 처리할 때 사용자가 보낸 데이터를 추출할수 있음
-    var passport = require('passport')
-    var LocalStrategy = require('passport-local').Strategy
+   
 
-
-    passport.deserializeUser(function(department, done) {
-      console.log('deserializeUser',department)
-      var sql='SELECT * FROM users WHERE username=?';
-      pool.getConnection((err,connection) =>{
-        if(err) throw err;
-        else{
-          connection.query(sql,[department],function(err,results){
-            if(err){
-              console.log(err);
-              done('There is no user des');
-            } else{
-              done(null,results[0]);
-            }
-            connection.destroy();
-          })
-    
-        }
-      });
-    
-    });
     
     const db = require('./db'); //db.js 파일 모듈화
     
@@ -40,10 +18,16 @@ module.exports = () => {
       console.log(`Caught exception: ${err}`);
     });
   //잡히지 않은 예외를 몽땅 처리하는 부분을 만듬. 이로인해 프로세스가 절대 죽지 않게함
-    app.use(timeout('5s'));//connect-timeout 미들웨어 객체 생성
-    app.use(bodyParser.urlencoded({ extended: false }));//application/x=www-form-wrlencoded 파싱
+    app.use(express.json())
+    app.use(express.urlencoded({extended: true}))
+    app.use(bodyParser.urlencoded({ extended: true }));//application/x=www-form-urlencoded 파싱
     app.use(bodyParser.json());//application/json 파싱
-  
+    
+    app.post('/yy', (req,res)=>{
+      console.log(req.body);
+      res.end()
+    })
+    
   
     db.connect(key, (err) => { //db.js파일을 연결해 db와 연결
       if (err) { //연결 에러시
