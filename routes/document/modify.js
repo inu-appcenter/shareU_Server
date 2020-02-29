@@ -36,7 +36,7 @@ moment.tz.setDefault("Asia/Seoul");
 // let Array = [] ;
 
 // router.post('/',upload.array('userfile',15), async function(req,res){
-  router.post('/', async function(req,res){
+router.post('/', async function(req,res){
 
 var db = req.app.get('db');
 var documentKey = req.body.documentKey;

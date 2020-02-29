@@ -4,9 +4,7 @@ const key = require('../../config/jwt').key
 
 
 const authMiddleware = (req,res,next) => {
-    console.log('들어와요')
-    console.log(req.body)
-    //read the token from header or url
+       //read the token from header or url
     const token =  req.body.token
 //req.headers['x-access-token'] ||
     //token does not exist

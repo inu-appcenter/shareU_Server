@@ -6,7 +6,7 @@ router.post('/',(req,res)=>{
     var db = req.app.get('db');
     var documentKey = req.body.documentKey;
 
-    let sqljoin_Delete = 'DELETE doc, fi, poi, re FROM document AS doc LEFT JOIN file AS fi ON doc.documentKey = fi.documentKey LEFT JOIN point AS poi ON doc.documentKey = poi.documentKey LEFT JOIN review AS re ON doc.documentKey = re.documentKey WHERE fi.documentKey=?'; 
+    let sqljoin_Delete = 'DELETE doc, fi, poi, re, rep FROM document AS doc LEFT JOIN file AS fi ON doc.documentKey = fi.documentKey LEFT JOIN point AS poi ON doc.documentKey = poi.documentKey LEFT JOIN review AS re ON doc.documentKey = re.documentKey LEFT JOIN report AS rep ON doc.documentKey = rep.documentKey WHERE fi.documentKey=?'; 
     //delete a, b, c from tbl_1 as a left join tbl_2 as b on a.col_code = b.col_code left join tbl_3 as c on a.lum_code = c.lum_code where a.id = 1
     // let sqljoin = 'SELECT * FROM document AS doc LEFT JOIN file AS fi ON doc.documentKey = fi.documentKey LEFT JOIN point AS poi ON doc.documentKey = poi.documentKey WHERE fi.documentKey=?'
     

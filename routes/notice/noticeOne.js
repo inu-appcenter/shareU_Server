@@ -4,11 +4,12 @@ router.get('/',(req,res)=>{
 
     const db = req.app.get('db');
     
-    let keyNum = req.params.noticeKey;
+    let keyNum = req.query.noticeKey;
     let sql = 'SELECT title, DATE_FORMAT(noticeDate, "%Y-%m-%d") AS noticeDate,content FROM notice WHERE noticeKey=?';  
     db.query(sql,keyNum,(err, rows) => { //
     if (err) {
-    console.log("전체 공지사항 리스트 전송 실패");
+    console.log(err)
+    console.log("선택한 공지사항 리스트 전송 실패");
     return res.sendStatus(400);
     }
     

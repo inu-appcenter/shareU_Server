@@ -5,7 +5,8 @@ const app = require('./config/express')();
 app.use('/search', require('./routes/search/index'));
 app.use('/notice', require('./routes/notice/index'));
 app.use('/document', require('./routes/document/index'));
-app.use('/account',require('./routes/account/user'))
+app.use('/account',require('./routes/account/user')) // <-- err
+
 
 
 app.use((req, res, next) => {
@@ -21,6 +22,8 @@ app.use((err, req, res, next) => {
 
 
 const port = app.get('key').port;
-app.listen(port, () => {
+app.listen(port, (error) => {
+    if (error) return console.log('listen: ',error);
+    
     console.log( 'Listening on port %d.', port);
 });

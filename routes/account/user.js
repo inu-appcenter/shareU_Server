@@ -1,40 +1,5 @@
-//앱센터 스터디
-/*
 const express = require('express')
 const router = express.Router()
-//const config = require('./express')
-const request = require('request')
-const authMiddleWare = require('./auth')
-let returnJson = {}
-let returnStatus
-
-router.use('/myPage',authMiddleWare)
-router.use('/changeInfo',authMiddleWare)
-
-
-router.get('/login',(req,res)=>{
-    const query ={
-        url :'http://117.16.191.242:7003/signIn',
-        headers : {
-            'Content-type' : 'application/x-www-form/urlencoded'
-        },
-        method : 'post',
-        form: {
-            id :req.body.id,
-            passwd : req.body.passwd
-        },
-        json: true
-    }
-    request.post()
-    res.status(returnStatus).json(returnJson)
-            return response
-})
-
-*/
-
-const express = require('express')
-const router = express.Router()
-//const config = require('./express')
 const request = require('request')
 const authMiddleWare = require('./auth')
 const config = require('../../config/config')
@@ -45,7 +10,7 @@ let returnStatus
 
 router.use('/myPage',authMiddleWare)
 router.use('/changeInfo',authMiddleWare)
-
+router.use('/changeBefore',authMiddleWare)
 
 router.post('/signUp',(req,res)=>{
     const signUpOptions = {
@@ -174,6 +139,7 @@ router.post('/changeInfo',(req,res)=>{
 })
 
 router.post('/tmpPasswd', async(req,res)=>{
+    // 예외처리만 로직 짜면 될거에여
     const tmpPasswdQuery = {
         url : config.tmpPasswd,
         headers : {
@@ -183,10 +149,17 @@ router.post('/tmpPasswd', async(req,res)=>{
             id : req.body.id,
             name : req.body.name
         },
+        method: 'post',
         json : true
     }
-
-    request.post(tmpPasswdQuery,(err,response,body)=>{
+    request.post(tmpPasswdQuery, (error, result)=>{
+        if (error) return res.json(error.message);
+        else {
+            return res.json(result.body);
+        }
+    })    
+    /*
+​   request.post(tmpPasswdQuery,(err,response,body)=>{
         if(!err){
             switch(response.statusCode){
                 case 200 :
@@ -200,8 +173,8 @@ router.post('/tmpPasswd', async(req,res)=>{
                     returnJson = {
                         ans : "fail"
                     }
-                breakß
-
+                break
+​
                 default :
                 break
             }
@@ -211,9 +184,21 @@ router.post('/tmpPasswd', async(req,res)=>{
             console.log(err)
         }
     })
+    */
 })
 
 router.post('/myPage',async (req,res) => {
+    let decodedQuery = {
+        id : req.decoded.id,
+        name : req.decoded.name,
+        major : req.decoded.major,
+       
+    }
+    res.status(200).json(decodedQuery)
+})
+
+
+router.post('/changeBefore',async (req,res) => {
     let decodedQuery = {
         id : req.decoded.id,
         name : req.decoded.name,
@@ -222,8 +207,6 @@ router.post('/myPage',async (req,res) => {
     }
     res.status(200).json(decodedQuery)
 })
-
-
 
 
 

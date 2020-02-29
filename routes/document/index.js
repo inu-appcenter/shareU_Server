@@ -5,13 +5,14 @@ const modify = require('./modify')
 const upload = require('./upload')
 const send = require('./send')
 const user_doc = require('./user_doc')
-
+const report = require('./report')
 
 router.use('/delete_doc',delete_doc)
 router.use('/modify',modify)
 router.use('/upload',upload)
 router.use('/send',send)
 router.use('/user_doc',user_doc)
+router.use('/report',report)
 
 
 module.exports = router
