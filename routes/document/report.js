@@ -19,7 +19,6 @@ router.post('/', (req, res)=>{
             console.log(err)
             return res.sendStatus(400)
         }else{
-            console.log('Reporting successed!')
             res.status(200).json({ans:true})
         }
     })

@@ -6,7 +6,7 @@ router.get('/categoryMajor',(req,res)=>{ // 전공이름 전송 ->카테고리�
     const db = req.app.get('db');
     
     let majorName=req.query.majorName
-    let sql = 'SELECT majorName,majorInitiality FROM majorlist WHERE majorName LIKE'+'"%"'+'?'+ '"%"'+'order by binary(majorInitiality)'; 
+    let sql = 'SELECT majorName,majorInitiality FROM majorlist WHERE majorName LIKE'+'"%"'+'?'+ '"%"'+'order by binary(majorName)'; 
     db.query(sql,[majorName], (err, rows) => { 
     if (err) {
     console.log("전공이름 리스트 전송 ->카테고리에서 실패");
@@ -26,7 +26,7 @@ router.get('/categorySubject',(req,res)=>{ // 전공이름 선택후 전공과�
 
     let subject=req.query.subjectName
     let majorName=req.query.majorName
-    let sql = 'SELECT subjectName,subjectInitiality,profName FROM subjectlist WHERE division='+'"전공"'+ 'AND majorName=? AND subjectName LIKE'+'"%"'+'?'+ '"%"'+'order by binary(subjectInitiality)'; 
+    let sql = 'SELECT subjectName,subjectInitiality,profName FROM subjectlist WHERE division='+'"전공"'+ 'AND majorName=? AND subjectName LIKE'+'"%"'+'?'+ '"%"'+'order by binary(subjectName)'; 
     db.query(sql,[majorName,subject], (err, rows) => { 
     if (err) {
     console.log("전공이름 선택후 전공과목이름 ->카테고리에서 실패");
@@ -45,7 +45,7 @@ router.get('/categoryCulture',(req,res)=>{ // 교양 과목이름 리스트 전�
     const db = req.app.get('db');
 
     let subject=req.query.subjectName
-    let sql = 'SELECT subjectName,subjectInitiality FROM subjectlist WHERE division='+'"교양"'+'AND subjectName LIKE'+'"%"'+'?'+ '"%"'+'order by binary(subjectInitiality)'; 
+    let sql = 'SELECT subjectName,subjectInitiality,profName FROM subjectlist WHERE division='+'"교양"'+'AND subjectName LIKE'+'"%"'+'?'+ '"%"'+'order by binary(subjectName)'; 
     db.query(sql,[subject], (err, rows) => { 
     if (err) {
     console.log("교양 과목이름 리스트 전송 ->카테고리에서 실패");
@@ -83,7 +83,7 @@ router.get('/subjectChoice',(req,res)=>{ // 과목이름 리스트 전송 ->자�
     const db = req.app.get('db');
 
     let subject=req.query.subjectName
-    let sql = 'SELECT subjectName,subjectInitiality FROM subjectlist WHERE subjectName LIKE'+'"%"'+'?'+ '"%"'+'AND subjectListKey IN (SELECT MAX(subjectListKey) FROM subjectList GROUP BY subjectName) order by binary(subjectInitiality)'; 
+    let sql = 'SELECT subjectName,subjectInitiality FROM subjectlist WHERE subjectName LIKE'+'"%"'+'?'+ '"%"'+'AND subjectListKey IN (SELECT MAX(subjectListKey) FROM subjectList GROUP BY subjectName) order by binary(subjectName)'; 
     db.query(sql,[subject], (err, rows) => { 
     if (err) {
     console.log("과목이름 리스트 전송 ->자료작성 페이지에서 실패");

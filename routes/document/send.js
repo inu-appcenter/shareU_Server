@@ -57,7 +57,7 @@ router.get('/score',(req,res)=>{ // 자료 평균 별점 전송
 router.get('/reviewList',(req,res)=>{ // 리뷰 리스트 전송
     const db = req.app.get('db');
     let documentK=req.query.documentKey
-    let sql = 'SELECT uploadDate,uploadId,review,score,reviewKey FROM review WHERE documentKey=? ORDER BY uploadDate';  
+    let sql = 'SELECT DATE_FORMAT(uploadDate, "%Y-%m-%d") AS uploadDate,uploadId,review,score,reviewKey FROM review WHERE documentKey=? ORDER BY uploadDate';  
     db.query(sql,documentK, (err, rows) => { 
     if (err) {
     console.log("리뷰 리스트 전송 실패");
@@ -75,11 +75,12 @@ router.get('/more' , (req,res) =>{ //자료 검색 결과에서 최신순으로 
     const db = req.app.get('db');
     let subject=req.query.subjectName
     let prof=req.query.profName
+    let title=req.query.title
 
-    let sql_sub = 'SELECT doc.documentKey, doc.subjectName, doc.title, doc.profName, fi.extension, DATE_FORMAT(doc.uploadDate, "%Y-%m-%d") AS uploadDate, avg(re.score) FROM document doc LEFT JOIN file fi ON doc.documentKey = fi.documentKey LEFT JOIN review  re ON doc.documentKey = re.documentKey WHERE doc.subjectName LIKE'+'"%"'+'?'+ '"%"' + 'GROUP BY doc.documentKey,fi.extension ORDER BY doc.uploadDate'
+    let sql_sub = 'SELECT doc.documentKey, doc.subjectName, doc.title, doc.profName, fi.extension, DATE_FORMAT(doc.uploadDate, "%Y-%m-%d") AS uploadDate, avg(re.score) FROM document doc LEFT JOIN file fi ON doc.documentKey = fi.documentKey LEFT JOIN review  re ON doc.documentKey = re.documentKey WHERE doc.title LIKE'+'"%"'+'?'+ '"%"' + 'GROUP BY doc.documentKey,fi.extension ORDER BY doc.uploadDate'
     let sql_all = 'SELECT doc.documentKey,doc.subjectName,doc.title, doc.profName, fi.extension, DATE_FORMAT(doc.uploadDate, "%Y-%m-%d") AS uploadDate, avg(re.score) FROM document doc LEFT JOIN file fi ON doc.documentKey = fi.documentKey LEFT JOIN review re ON doc.documentKey = re.documentKey WHERE doc.subjectName =? AND doc.profName =? GROUP BY doc.documentKey,fi.extension ORDER BY doc.uploadDate'
-    if(subject && !prof){
-    db.query(sql_sub,subject, (err,rows)=>{ //검색바에 과목이름 검색
+    if(title){
+    db.query(sql_sub,title, (err,rows)=>{ //검색바에 과목이름 검색
         if(err){
             throw err
         }else{
@@ -107,8 +108,8 @@ router.get('/documentTop5ScoreList',(req,res)=>{ // 자료 리스트 별점순�
     let title=req.query.title
     let subjectN=req.query.subjectName
     let profN=req.query.profName
-    let sql='SELECT d.documentKey,d.title,DATE_FORMAT(d.uploadDate, "%Y-%m-%d") AS uploadDate,f.extension,avg(r.score) FROM document d INNER JOIN file f on d.documentKey = f.documentKey INNER JOIN review r ON d.documentKey=r.documentKey WHERE d.subjectName=? AND d.profName=? GROUP BY d.documentKey, f.extension ORDER BY avg(score) LIMIT 5'
-    let sqlBar = 'SELECT d.documentKey,d.title,DATE_FORMAT(d.uploadDate, "%Y-%m-%d") AS uploadDate,f.extension,avg(r.score) FROM document d INNER JOIN file f on d.documentKey = f.documentKey INNER JOIN review r ON d.documentKey=r.documentKey WHERE title LIKE'+'"%"'+'?'+ '"%"'+'GROUP BY d.documentKey ORDER BY avg(score) LIMIT 5';  
+    let sql='SELECT d.documentKey,d.title,DATE_FORMAT(d.uploadDate, "%Y-%m-%d") AS uploadDate,f.extension,avg(r.score) FROM document d INNER JOIN file f on d.documentKey = f.documentKey INNER JOIN review r ON d.documentKey=r.documentKey WHERE d.subjectName=? AND d.profName=? GROUP BY d.documentKey, f.extension ORDER BY avg(score) DESC LIMIT 5'
+    let sqlBar = 'SELECT d.documentKey,d.title,DATE_FORMAT(d.uploadDate, "%Y-%m-%d") AS uploadDate,f.extension,avg(r.score) FROM document d INNER JOIN file f on d.documentKey = f.documentKey INNER JOIN review r ON d.documentKey=r.documentKey WHERE title LIKE'+'"%"'+'?'+ '"%"'+'GROUP BY d.documentKey ORDER BY avg(score) DESC LIMIT 5';  
     if((subjectN=== null || subjectN == undefined || subjectN == "")&&(profN=== null || profN == undefined || profN == "")){
         db.query(sqlBar,title, (err, rows) => { 
             if (err) {
@@ -174,7 +175,7 @@ router.get('/documentTop5DateList',(req,res)=>{ // 자료 리스트 최신순으
 router.get('/documentPage',(req,res)=>{ // 자료 상세 페이지 -> 파일을 다운로드 받기전 뜨는 상세페이지 전송
     const db = req.app.get('db');
     let documentKey=req.query.documentKey;
-    let sql = 'SELECT d.title,d.subjectName,d.profName,d.content,DATE_FORMAT(d.uploadDate, "%Y-%m-%d") AS uploadDate,d.uploadId,f.extension FROM document d,file f WHERE d.documentKey=f.documentKey AND d.documentKey=? ';  
+    let sql = 'SELECT s.division,s.majorName,d.title,d.subjectName,d.profName,d.content,DATE_FORMAT(d.uploadDate, "%Y-%m-%d") AS uploadDate,d.uploadId,f.extension FROM document AS d INNER JOIN file AS f ON d.documentKey=f.documentKey INNER JOIN subjectlist AS s ON d.subjectName = s.subjectName AND d.profName = s.profName WHERE d.documentKey=?';  
     
     db.query(sql,[documentKey],async (err, rows) => { 
     if (err) {
@@ -200,30 +201,43 @@ router.post('/documentFile', authMiddleware,(req,res)=>{ // 자료 파일 다운
     
     let pointloadDate = moment().format('YYYY-MM-DD HH:mm:ss');
     let documentKey=req.body.documentKey;
-    let uploadId = req.decoded.id;  
+    let uploadId = req.decoded.id; 
+    let checkPoint = 'SELECT sum(point)>3 AS C FROM point WHERE uploadId=?' 
     let sqlPoint='INSERT INTO point (uploadId,point,documentKey,pointloadDate) VALUES (?,-3,?,?)'
     let sqlFile='SELECT fileName FROM file WHERE documentKey=?';
-    
-    db.query(sqlPoint,[uploadId,documentKey,pointloadDate],async function(err,row) { 
-    if (err) {
-    console.log("포인트 차감 실패");
-    console.log(err)
-    return res.sendStatus(400);
-    }
-    else{
-       await db.query(sqlFile,[documentKey],function(err,rows){
-            if(err){
-                
-                console.log("자료 파일 전송 실패");
+    db.query(checkPoint,[uploadId],async (err,rows)=>{
+        if(err){
+            console.log(err)
+            res.send(err)
+        }
+        else if(rows[0].C=='0'){
+            var data=[]
+            data.push({ans:false})
+            await res.json(data) // 포인트가 부족하여 자료 다운로드 불가
+        }
+        else{
+           
+            db.query(sqlPoint,[uploadId,documentKey,pointloadDate],async function(err,row) { 
+                if (err) {
+                console.log("포인트 차감 실패");
+                console.log(err)
                 return res.sendStatus(400);
-            }
-            else{
-               
-                res.status(200).json(rows);
-            }    
-        })
-    }
-    });   
+                }
+                else{
+                   await db.query(sqlFile,[documentKey],function(err,rows){
+                        if(err){
+                            console.log("자료 파일 전송 실패");
+                            return res.sendStatus(400);
+                        }
+                        else{
+                            res.status(200).json(rows);
+                        }    
+                    })
+                }
+                });   
+        }
+    })
+   
 })
 
 
@@ -243,6 +257,58 @@ router.get('/categoryResend',(req,res)=>{ //카테고리 과목이름과 교수�
             res.status(200).json(rows);
         }
         })
+})
+
+
+router.get('/mainTop5ScoreList',(req,res)=>{ // main page ->전체 자료 리스트 별점순으로 5개 전송 
+
+    const db = req.app.get('db');
+
+    let sql='SELECT d.documentKey, d.title, DATE_FORMAT(d.uploadDate, "%Y-%m-%d") AS uploadDate, f.extension, avg(r.score) FROM document d INNER JOIN file f on d.documentKey = f.documentKey INNER JOIN review r ON d.documentKey=r.documentKey GROUP BY d.documentKey, f.extension ORDER BY avg(score) desc LIMIT 5'
+    db.query(sql, (err, rows) => { 
+        if (err) {
+            console.log("자료 리스트 별점순으로 5개 전송 (전체자료 중에서) 실패");
+            console.log(err)
+            return res.sendStatus(400);
+       }else{
+            res.status(200).json(rows);
+           }
+    }); 
+
+}) 
+
+router.get('/sendBeforeModify',(req,res)=>{ //수정하기전에 기존에 데이터 전송
+    const db = req.app.get('db');
+    let documentKey=req.query.documentKey;
+    let sql = 'SELECT d.title,d.subjectName,d.profName,d.content,f.extension,f.fileName FROM document AS d INNER JOIN file AS f ON d.documentKey=f.documentKey WHERE d.documentKey=?';  
+    
+    db.query(sql,[documentKey],(err, rows) => { 
+    if (err) {
+    console.log("자료상세 페이지 전송 실패");
+    console.log(err)
+    return res.sendStatus(400);
+    }
+    else{
+         res.status(200).json(rows);
+    }
+ });  
+})
+
+
+router.post('/sendFileExtension',(req,res)=>{ // 파일 확장자명 전송 (안드로이드 클라이언트에서 요청하여 제작)
+    const db = req.app.get('db')
+    let documentKey=req.body.documentKey;
+    let sql = 'SELECT extension FROM file WHERE documentKey=?'
+    db.query(sql,[documentKey],(err,rows) =>{
+        if(err){
+            console.log("파일 확장자명 전송 실패")
+            console.log(err)
+            return res.sendStatus(400);
+        }
+        else{
+            res.status(200).json(rows)
+        }
+    })
 })
 
 

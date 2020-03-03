@@ -1,7 +1,7 @@
 const app = require('./config/express')();
 
 
-// const fileupload = require("express-fileupload");
+
 app.use('/search', require('./routes/search/index'));
 app.use('/notice', require('./routes/notice/index'));
 app.use('/document', require('./routes/document/index'));

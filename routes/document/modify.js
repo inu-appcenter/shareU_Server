@@ -87,7 +87,7 @@ if (err) {
 // return res.sendStatus(400);
 
  }else{
-  console.log('success updating document: ' + rows)
+ 
   res.status(200).json({ans:true})
 }
 });

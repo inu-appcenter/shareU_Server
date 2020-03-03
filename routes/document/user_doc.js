@@ -120,7 +120,7 @@ router.post('/giftPoint',(req,res)=>{ //회원가입시 10포인트 선물
             if(rows == undefined || rows == null || rows ==""){
                 db.query(sql,[uploadId,uploadDate],(err,rows)=>{
                     if(err){
-                        console.log('회원가입시 10포인트 선물')
+                        console.log('회원가입시 10포인트 선물 실패')
                         console.log(err)
                     }
                     res.json({ans:true}); 
