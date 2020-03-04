@@ -173,7 +173,7 @@ router.post('/documentPage',authMiddleware,(req,res)=>{ // 자료 상세 페이�
     const db = req.app.get('db');
     let documentKey=req.body.documentKey;
     let uploadId = req.decoded.id;
-    let sql = 'SELECT d.title,d.subjectName,d.profName,d.content,DATE_FORMAT(d.uploadDate, "%Y-%m-%d") AS uploadDate,d.uploadId,f.extension,s.division FROM document d,file f,subjectlist s WHERE d.documentKey=f.documentKey AND d.subjectName = s.subjectName AND d.profName = s.profName AND d.documentKey=? ';  
+    let sql = 'SELECT d.title,d.subjectName,d.profName,d.content,DATE_FORMAT(d.uploadDate, "%Y-%m-%d") AS uploadDate,d.uploadId,f.extension,s.majorName FROM document d,file f,subjectlist s WHERE d.documentKey=f.documentKey AND d.subjectName = s.subjectName AND d.profName = s.profName AND d.documentKey=? ';  
     let sqlCheck='SELECT pointKey FROM point WHERE documentKey=? AND point=-3 AND uploadId=?'
 
     db.query(sql,[documentKey],async (err, rows) => { 

@@ -54,7 +54,8 @@ router.post('/uploadfile',upload.single('userfile'), async (req,res)=>{ // 자�
     let sql='INSERT INTO document (uploadId,title,subjectName,profName,content,uploadDate) VALUES (?,?,?,?,?,?)'; // uploadId 들어가면 수정하기
     let sqlFile = 'INSERT INTO file (documentKey,fileName,subjectName,profName,extension) VALUES (?,?,?,?,?)';
     let sqlPoint = 'INSERT INTO point (uploadId,point,documentKey,pointloadDate) VALUES (?,5,?,?) '
-    var filen=req.file.filename;
+    let filen=req.file.filename;
+    console.log(filen)
     var ext = filen.split('.').pop();
 
     await db.query(sql,[uploadId,title,subjectName,profName,content,uploadDate], async function(err,result)  { 
