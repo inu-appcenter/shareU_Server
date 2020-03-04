@@ -197,6 +197,23 @@ router.post('/documentPage',authMiddleware,(req,res)=>{ // 자료 상세 페이�
         })
     })
 
+    router.get('/documentPagenone',(req,res)=>{ // 비로그인자를 위한 자료 상세 페이지 -> 파일을 다운로드 받기전 뜨는 상세페이지 전송
+        const db = req.app.get('db');
+        
+        let documentKey=req.query.documentKey;
+        let sql = 'SELECT d.title,d.subjectName,d.profName,d.content,DATE_FORMAT(d.uploadDate, "%Y-%m-%d") AS uploadDate,d.uploadId,f.extension,s.majorName FROM document d,file f,subjectlist s WHERE d.documentKey=f.documentKey AND d.subjectName = s.subjectName AND d.profName = s.profName AND d.documentKey=? '; 
+    
+        db.query(sql,[documentKey],async (err, rows) => { 
+            if (err) {
+            console.log("자료상세 페이지 전송 실패");
+            console.log(err)
+            return res.sendStatus(400);
+            }
+            else{
+                return res.status(200).json(rows)
+             }
+            })
+        })
 
 router.post('/documentFile', authMiddleware,(req,res)=>{ // 자료 파일 다운로드 (서버에 저장된 파일 클라이언트에게 전송)
     const db = req.app.get('db');
