@@ -101,11 +101,11 @@ router.post('/uploadreview',authMiddleware,(req,res)=>{
   let rev= req.body.review;
   let documentK= req.body.documentKey;
   let sco = req.body.score;
-  let checkDownload = 'SELECT p.point FROM point AS p WHERE p.point=-3 AND p.uploadId=?'
+  let checkDownload = 'SELECT p.point FROM point AS p WHERE p.point=-3 AND p.uploadId=? AND p.documentKey=?'
   let checkReview ='SELECT p.point FROM point AS p WHERE p.point=2 AND p.uploadId=? AND p.documentKey=?'
   let sql = 'INSERT INTO review (uploadDate,uploadId,review,documentKey,score) VALUES (?,?,?,?,?) ';  //uploadId들어가면 수정하기
   let sqlPoint = 'INSERT INTO point (uploadId,point,documentKey,pointloadDate) VALUES (?,2,?,?) '
-  db.query(checkDownload,[uploadId],async(err,rows) => {
+  db.query(checkDownload,[uploadId,documentK],async(err,rows) => {
     if(err){
       console.log(err)
       res.send(err)

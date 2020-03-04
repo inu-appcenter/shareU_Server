@@ -15,7 +15,6 @@ require('moment-timezone');
 moment.tz.setDefault("Asia/Seoul"); 
 
 
-
 const storage = multer.diskStorage({ 
     destination: function(req, file ,cb){
         cb(null, "uploads/")
@@ -32,8 +31,6 @@ const storage = multer.diskStorage({
 }) 
 
 const upload = multer({storage: storage}) 
-
-
 
 
 router.get('/score',(req,res)=>{ // 자료 평균 별점 전송
@@ -77,10 +74,10 @@ router.get('/more' , (req,res) =>{ //자료 검색 결과에서 최신순으로 
     let prof=req.query.profName
     let title=req.query.title
 
-    let sql_sub = 'SELECT doc.documentKey, doc.subjectName, doc.title, doc.profName, fi.extension, DATE_FORMAT(doc.uploadDate, "%Y-%m-%d") AS uploadDate, avg(re.score) FROM document doc LEFT JOIN file fi ON doc.documentKey = fi.documentKey LEFT JOIN review  re ON doc.documentKey = re.documentKey WHERE doc.title LIKE'+'"%"'+'?'+ '"%"' + 'GROUP BY doc.documentKey,fi.extension ORDER BY doc.uploadDate'
+    let sql_sub = 'SELECT doc.documentKey, doc.subjectName, doc.title, doc.profName, fi.extension, DATE_FORMAT(doc.uploadDate, "%Y-%m-%d") AS uploadDate, avg(re.score) FROM document doc LEFT JOIN file fi ON doc.documentKey = fi.documentKey LEFT JOIN review  re ON doc.documentKey = re.documentKey WHERE doc.title LIKE ? GROUP BY doc.documentKey,fi.extension ORDER BY doc.uploadDate'
     let sql_all = 'SELECT doc.documentKey,doc.subjectName,doc.title, doc.profName, fi.extension, DATE_FORMAT(doc.uploadDate, "%Y-%m-%d") AS uploadDate, avg(re.score) FROM document doc LEFT JOIN file fi ON doc.documentKey = fi.documentKey LEFT JOIN review re ON doc.documentKey = re.documentKey WHERE doc.subjectName =? AND doc.profName =? GROUP BY doc.documentKey,fi.extension ORDER BY doc.uploadDate'
     if(title){
-    db.query(sql_sub,title, (err,rows)=>{ //검색바에 과목이름 검색
+    db.query(sql_sub,['%'+title+'%'], (err,rows)=>{ //검색바에 과목이름 검색
         if(err){
             throw err
         }else{
@@ -109,9 +106,9 @@ router.get('/documentTop5ScoreList',(req,res)=>{ // 자료 리스트 별점순�
     let subjectN=req.query.subjectName
     let profN=req.query.profName
     let sql='SELECT d.documentKey,d.title,DATE_FORMAT(d.uploadDate, "%Y-%m-%d") AS uploadDate,f.extension,avg(r.score) FROM document d INNER JOIN file f on d.documentKey = f.documentKey INNER JOIN review r ON d.documentKey=r.documentKey WHERE d.subjectName=? AND d.profName=? GROUP BY d.documentKey, f.extension ORDER BY avg(score) DESC LIMIT 5'
-    let sqlBar = 'SELECT d.documentKey,d.title,DATE_FORMAT(d.uploadDate, "%Y-%m-%d") AS uploadDate,f.extension,avg(r.score) FROM document d INNER JOIN file f on d.documentKey = f.documentKey INNER JOIN review r ON d.documentKey=r.documentKey WHERE title LIKE'+'"%"'+'?'+ '"%"'+'GROUP BY d.documentKey ORDER BY avg(score) DESC LIMIT 5';  
+    let sqlBar = 'SELECT d.documentKey,d.title,DATE_FORMAT(d.uploadDate, "%Y-%m-%d") AS uploadDate,f.extension,avg(r.score) FROM document d INNER JOIN file f on d.documentKey = f.documentKey INNER JOIN review r ON d.documentKey=r.documentKey WHERE title LIKE ? GROUP BY d.documentKey ORDER BY avg(score) DESC LIMIT 5';  
     if((subjectN=== null || subjectN == undefined || subjectN == "")&&(profN=== null || profN == undefined || profN == "")){
-        db.query(sqlBar,title, (err, rows) => { 
+        db.query(sqlBar,['%'+title+'%'], (err, rows) => { 
             if (err) {
             console.log("자료 리스트 최신순으로 5개 전송 (검색바에서 검색했을 시) 실패");
             console.log(err)
@@ -144,9 +141,9 @@ router.get('/documentTop5DateList',(req,res)=>{ // 자료 리스트 최신순으
     let subjectN=req.query.subjectName
     let profN=req.query.profName
     let sql='SELECT documentKey,title,DATE_FORMAT(uploadDate, "%Y-%m-%d") AS uploadDate FROM document WHERE subjectName=? AND profName=? ORDER BY uploadDate DESC LIMIT 5'
-    let sqlBar = 'SELECT documentKey,title,DATE_FORMAT(uploadDate, "%Y-%m-%d") AS uploadDate FROM document WHERE title LIKE'+'"%"'+'?'+ '"%"'+'ORDER BY uploadDate DESC LIMIT 5';  
+    let sqlBar = 'SELECT documentKey,title,DATE_FORMAT(uploadDate, "%Y-%m-%d") AS uploadDate FROM document WHERE title LIKE ? ORDER BY uploadDate DESC LIMIT 5';  
     if((subjectN=== null || subjectN == undefined || subjectN == "")&&(profN=== null || profN == undefined || profN == "")){
-        db.query(sqlBar,title, (err, rows) => { 
+        db.query(sqlBar,['%'+title+'%'], (err, rows) => { 
             if (err) {
             console.log("자료 리스트 최신순으로 5개 전송 (검색바에서 검색했을 시) 실패");
             return res.sendStatus(400);
@@ -172,28 +169,33 @@ router.get('/documentTop5DateList',(req,res)=>{ // 자료 리스트 최신순으
 })
 
 
-router.get('/documentPage',(req,res)=>{ // 자료 상세 페이지 -> 파일을 다운로드 받기전 뜨는 상세페이지 전송
+router.post('/documentPage',authMiddleware,(req,res)=>{ // 자료 상세 페이지 -> 파일을 다운로드 받기전 뜨는 상세페이지 전송
     const db = req.app.get('db');
-    let documentKey=req.query.documentKey;
-    let sql = 'SELECT s.division,s.majorName,d.title,d.subjectName,d.profName,d.content,DATE_FORMAT(d.uploadDate, "%Y-%m-%d") AS uploadDate,d.uploadId,f.extension FROM document AS d INNER JOIN file AS f ON d.documentKey=f.documentKey INNER JOIN subjectlist AS s ON d.subjectName = s.subjectName AND d.profName = s.profName WHERE d.documentKey=?';  
-    
+    let documentKey=req.body.documentKey;
+    let uploadId = req.decoded.id;
+    let sql = 'SELECT d.title,d.subjectName,d.profName,d.content,DATE_FORMAT(d.uploadDate, "%Y-%m-%d") AS uploadDate,d.uploadId,f.extension,s.division FROM document d,file f,subjectlist s WHERE d.documentKey=f.documentKey AND d.subjectName = s.subjectName AND d.profName = s.profName AND d.documentKey=? ';  
+    let sqlCheck='SELECT pointKey FROM point WHERE documentKey=? AND point=-3 AND uploadId=?'
+
     db.query(sql,[documentKey],async (err, rows) => { 
-    if (err) {
-    console.log("자료상세 페이지 전송 실패");
-    console.log(err)
-    return res.sendStatus(400);
-    }
-    else{
-        
-        res.status(200).json(rows);
-    }
-    
-
-
-
-    });  
-    
-})
+        if (err) {
+        console.log("자료상세 페이지 전송 실패");
+        console.log(err)
+        return res.sendStatus(400);
+        }
+        else{
+        db.query(sqlCheck,[documentKey,uploadId], function(err,result){ //자료 상세페이지에서 과거 파일 다운 유/무 판단
+            if(err){
+                console.log(err)
+                return res.sendStatus(400)
+            }else if(result[0] === undefined || result[0] === null || result[0] === ""){ // 사용자가 이전에 받은 적이 없음
+                return res.status(200).json({ans:true,rows: rows}) //이전에 받은적 없는 사용자
+            }else{
+                return res.status(200).json({ans:false,rows: rows}) // 이전에 받은적 있는 사용자
+            }
+                })
+            }
+        })
+    })
 
 
 router.post('/documentFile', authMiddleware,(req,res)=>{ // 자료 파일 다운로드 (서버에 저장된 파일 클라이언트에게 전송)
@@ -238,6 +240,25 @@ router.post('/documentFile', authMiddleware,(req,res)=>{ // 자료 파일 다운
         }
     })
    
+})
+
+
+router.post('/reDownload',(req,res) =>{ // 이전에 파일 다운받은 사용자 다시받기 구현
+    const db = req.app.get('db');
+
+    let documentKey = req.body.documentKey
+    let sqlFile='SELECT fileName FROM file WHERE documentKey=?';
+
+    db.query(sqlFile,[documentKey],function(err,rows){
+        if(err){
+            
+            console.log("자료 파일 전송 실패");
+            return res.sendStatus(400);
+        }
+        else{
+            res.status(200).json(rows);
+        }    
+    })
 })
 
 

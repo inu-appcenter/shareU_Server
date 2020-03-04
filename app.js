@@ -10,9 +10,9 @@ app.use('/account',require('./routes/account/user')) // <-- err
 
 
 app.use((req, res, next) => {
-    let err = new Error('Not Found');
-    err.status = 404;
-    next(err);
+    
+    console.log("WTF????????");
+    res.sendStatus(404);
 });
 
 app.use((err, req, res, next) => {
