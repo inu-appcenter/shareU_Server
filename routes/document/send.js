@@ -92,7 +92,6 @@ router.get('/more' , (req,res) =>{ //자료 검색 결과에서 최신순으로 
                 console.log(err)
                 res.sendStatus(400)
             }else{
-                console.log('Searching all info is success! ' + answer)
                 res.status(200).json(answer);
             }
         })
@@ -221,7 +220,7 @@ router.post('/documentFile', authMiddleware,(req,res)=>{ // 자료 파일 다운
     let pointloadDate = moment().format('YYYY-MM-DD HH:mm:ss');
     let documentKey=req.body.documentKey;
     let uploadId = req.decoded.id; 
-    let checkPoint = 'SELECT sum(point)>3 AS C FROM point WHERE uploadId=?' 
+    let checkPoint = 'SELECT sum(point)>2 AS C FROM point WHERE uploadId=?' 
     let sqlPoint='INSERT INTO point (uploadId,point,documentKey,pointloadDate) VALUES (?,-3,?,?)'
     let sqlFile='SELECT fileName FROM file WHERE documentKey=?';
     db.query(checkPoint,[uploadId],async (err,rows)=>{
@@ -229,7 +228,7 @@ router.post('/documentFile', authMiddleware,(req,res)=>{ // 자료 파일 다운
             console.log(err)
             res.send(err)
         }
-        else if(rows[0].C=='0'){
+        else if(rows[0].C=='0' || rows[0].C ==null){
             var data=[]
             data.push({ans:false})
             await res.json(data) // 포인트가 부족하여 자료 다운로드 불가
